@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>面试题集锦 - 文档预览系统</title>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="static/marked.min.js"></script>
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
@@ -31,7 +31,7 @@
             --text-color: #24292e;
             --border-color: #e1e4e8;
             --bg-color: #f6f8fa;
-            --sidebar-width: 300px;
+            --sidebar-width: 400px;
             --header-height: 60px;
         }
 
@@ -844,8 +844,12 @@
 
         /* Tablet styles */
         @media (min-width: 769px) and (max-width: 1024px) {
+            :root {
+                --sidebar-width: 320px;
+            }
+
             .sidebar {
-                width: 250px;
+                width: var(--sidebar-width);
             }
 
             .content {
@@ -1323,6 +1327,13 @@ id: 'typescript',
                         icon: '🎯',
                         path: 'scenarios/index-qiankun.md',
                         badge: '31题'
+                    },
+                    {
+                        id: 'lowcode',
+                        name: '低代码',
+                        icon: '🔨',
+                        path: 'lowcode/index.md',
+                        badge: '20题'
                     }
                 ]
             },
@@ -1390,6 +1401,20 @@ id: 'typescript',
                         icon: '🎓',
                         path: 'big-company/index-gaotu.md',
                         badge: '9题'
+                    },
+                    {
+                        id: 'dianxiaomi',
+                        name: '店小秘',
+                        icon: '🏪',
+                        path: 'big-company/index-dianxiaomi.md',
+                        badge: '9题'
+                    },
+                    {
+                        id: 'xiaomi',
+                        name: '小米',
+                        icon: '📱',
+                        path: 'big-company/index-xiaomi.md',
+                        badge: '20题'
                     }
                 ]
             },
@@ -1430,6 +1455,13 @@ id: 'typescript',
                         icon: '🧮',
                         path: 'algorithm/index.md',
                         badge: '12题'
+                    },
+                    {
+                        id: 'programming',
+                        name: '编程题',
+                        icon: '💻',
+                        path: 'programming/index.md',
+                        badge: '41题'
                     }
                 ]
             }
@@ -1490,6 +1522,10 @@ id: 'typescript',
                 type: 'index',
                 indexPath: 'algorithm/index.md'
             },
+            'programming': {
+                type: 'index',
+                indexPath: 'programming/index.md'
+            },
             // 前端框架
             'react': {
                 type: 'index',
@@ -1548,6 +1584,14 @@ id: 'typescript',
                 type: 'index',
                 indexPath: 'big-company/index-gaotu.md'
             },
+            'dianxiaomi': {
+                type: 'index',
+                indexPath: 'big-company/index-dianxiaomi.md'
+            },
+            'xiaomi': {
+                type: 'index',
+                indexPath: 'big-company/index-xiaomi.md'
+            },
             // 补充面试题
             'vue3-supplement': {
                 type: 'index',
@@ -1572,6 +1616,10 @@ id: 'typescript',
             'qiankun': {
                 type: 'index',
                 indexPath: 'scenarios/index-qiankun.md'
+            },
+            'lowcode': {
+                type: 'index',
+                indexPath: 'lowcode/index.md'
             }
         };
 
@@ -2343,47 +2391,267 @@ id: 'typescript',
         let searchResults = [];
         let selectedSearchIndex = -1;
 
-        // 预加载所有文档的题目列表
-        async function preloadAllQuestions() {
-            for (const section of documents) {
-                for (const doc of section.items) {
-                    // 加载主文档
-                    try {
-                        const response = await fetch(doc.path);
-                        if (response.ok) {
-                            const markdown = await response.text();
-                            const questions = parseQuestionsFromMarkdown(markdown, doc.id);
-                            allQuestions[doc.id] = {
-                                questions: questions,
-                                docName: doc.name
-                            };
-                            console.log(`Loaded ${questions.length} questions for ${doc.name}`);
-                        }
-                    } catch (error) {
-                        console.error(`Failed to load questions for ${doc.name}:`, error);
+        document.getElementById('searchInput').addEventListener('input', async function (e) {
+            const query = e.target.value.toLowerCase().trim();
+            selectedSearchIndex = -1;
+
+            if (!query) {
+                hideSearchResults();
+                return;
+            }
+
+            console.log(`Searching for: "${query}"`);
+
+            searchResults = [];
+
+            // 直接搜索 allQuestions 中的所有问题
+            Object.keys(allQuestions).forEach(docId => {
+                const docData = allQuestions[docId];
+
+                docData.questions.forEach((question, index) => {
+                    const titleLower = question.title.toLowerCase();
+                    const contentLower = question.content ? question.content.toLowerCase() : '';
+                    
+                    // 计算匹配分数
+                    let score = 0;
+                    let matchType = null;
+
+                    // 1. 标题精确匹配（最高优先级）
+                    if (titleLower === query) {
+                        score = 100;
+                        matchType = 'exact-title';
+                    }
+                    // 2. 标题以搜索词开头
+                    else if (titleLower.startsWith(query)) {
+                        score = 80;
+                        matchType = 'title-start';
+                    }
+                    // 3. 标题包含搜索词
+                    else if (titleLower.includes(query)) {
+                        score = 60;
+                        matchType = 'title-contains';
+                    }
+                    // 4. 内容包含搜索词
+                    else if (contentLower.includes(query)) {
+                        score = 40;
+                        matchType = 'content';
                     }
 
-                    // 加载子分类文档
-                    if (doc.subItems && doc.subItems.length > 0) {
-                        for (const subDoc of doc.subItems) {
+                    // 如果有匹配，加入结果
+                    if (score > 0) {
+                        searchResults.push({
+                            docId: docId,
+                            docName: docData.docName,
+                            questionIndex: index,
+                            questionTitle: question.title,
+                            filePath: question.filePath,
+                            matchType: matchType,
+                            score: score
+                        });
+                    }
+                });
+            });
+
+            // 按分数排序（分数高的在前）
+            searchResults.sort((a, b) => b.score - a.score);
+
+            console.log(`Found ${searchResults.length} results for "${query}"`);
+            // 显示搜索结果
+            showSearchResults(searchResults, query);
+        });
+
+        // 预加载所有文档的题目列表
+        async function preloadAllQuestions() {
+            console.log('Starting to preload all questions...');
+
+            // 直接通过已知的文件名模式加载问题
+            // 文件名格式：数字-数字__标题.md 或 数字__数字__标题.md
+            
+            // 定义所有文档及其问题目录
+            const docs = [
+                { id: 'javascript', name: 'JavaScript', dir: 'javascript/questions' },
+                { id: 'react', name: 'React', dir: 'react/questions' },
+                { id: 'vue2', name: 'Vue2', dir: 'vue2/questions-vue2' },
+                { id: 'vue3', name: 'Vue3', dir: 'vue3/questions-vue3' },
+                { id: 'es6', name: 'ES6', dir: 'es6/questions-es6' },
+                { id: 'css', name: 'CSS', dir: 'css/questions-css' },
+                { id: 'html', name: 'HTML', dir: 'html/questions-html' },
+                { id: 'typescript', name: 'TypeScript', dir: 'typescript/questions-typescript' },
+                { id: 'http', name: 'HTTP', dir: 'http/questions-http' },
+                { id: 'git', name: 'Git', dir: 'git/questions-git' },
+                { id: 'node', name: 'Node.js', dir: 'node/questions-node' },
+                { id: 'design-patterns', name: '设计模式', dir: 'design-patterns/questions-design-patterns' },
+                { id: 'miniprogram', name: '小程序', dir: 'miniprogram/questions-miniprogram' },
+                { id: 'algorithm', name: '算法', dir: 'algorithm/questions-algorithm' },
+                { id: 'programming', name: '编程题', dir: 'programming/questions-programming' },
+                { id: 'lowcode', name: '低代码', dir: 'lowcode/questions-lowcode' },
+                { id: 'ali', name: '阿里巴巴', dir: 'big-company/questions-ali' },
+                { id: 'baidu', name: '百度', dir: 'big-company/questions-baidu' },
+                { id: 'jd', name: '京东', dir: 'big-company/questions-jd' },
+                { id: 'pdd', name: '拼多多', dir: 'big-company/questions-pdd' },
+                { id: 'tencent', name: '腾讯', dir: 'big-company/questions-tencent' },
+                { id: 'zhihu', name: '知乎', dir: 'big-company/questions-zhihu' },
+                { id: 'bytedance', name: '字节跳动', dir: 'big-company/questions-bytedance' },
+                { id: 'futu', name: '富途', dir: 'big-company/questions-futu' },
+                { id: 'gaotu', name: '高途', dir: 'big-company/questions-gaotu' },
+                { id: 'dianxiaomi', name: '店小秘', dir: 'big-company/questions-dianxiaomi' },
+                { id: 'xiaomi', name: '小米', dir: 'big-company/questions-xiaomi' },
+                { id: 'engineering', name: '工程化', dir: 'scenarios/questions-engineering' },
+                { id: 'performance', name: '性能优化', dir: 'scenarios/questions-performance' },
+                { id: 'qiankun', name: '微前端', dir: 'scenarios/questions-qiankun' },
+                { id: 'vite', name: 'Vite', dir: 'vite/questions-vite' },
+                { id: 'webpack', name: 'Webpack', dir: 'webpack/questions-webpack' }
+            ];
+
+            let totalQuestions = 0;
+
+            for (const doc of docs) {
+                console.log(`Processing ${doc.name} (${doc.id})`);
+                const questions = [];
+
+                // 尝试加载索引文件来获取问题列表
+                try {
+                    const indexResponse = await fetch(doc.dir.replace('/questions-', '/index-').replace('/questions', '/index.md'));
+                    if (indexResponse.ok) {
+                        const indexMarkdown = await indexResponse.text();
+                        // 从索引文件中提取问题链接
+                        const linkMatches = indexMarkdown.matchAll(/\d+\.\s+\[([^\]]+)\]\(([^)]+)\)/g);
+                        for (const match of linkMatches) {
+                            const title = match[1];
+                            const path = match[2].replace(/^\.\//, '');
+                            const fullPath = doc.dir + '/' + path;
+                            
                             try {
-                                const subResponse = await fetch(subDoc.path);
-                                if (subResponse.ok) {
-                                    const subMarkdown = await subResponse.text();
-                                    const subQuestions = parseQuestionsFromMarkdown(subMarkdown, subDoc.id);
-                                    allQuestions[subDoc.id] = {
-                                        questions: subQuestions,
-                                        docName: subDoc.name
-                                    };
-                                    console.log(`Loaded ${subQuestions.length} questions for ${subDoc.name}`);
+                                const fileResponse = await fetch(fullPath);
+                                if (fileResponse.ok) {
+                                    const markdown = await fileResponse.text();
+                                    const content = markdown.replace(/^#{1,2}\s+.+\n\n/, '');
+                                    questions.push({
+                                        index: questions.length,
+                                        title: title,
+                                        content: content,
+                                        filePath: fullPath
+                                    });
                                 }
-                            } catch (error) {
-                                console.error(`Failed to load questions for ${subDoc.name}:`, error);
+                            } catch (e) {
+                                console.error(`Failed to load ${fullPath}:`, e);
                             }
                         }
                     }
+                } catch (e) {
+                    console.error(`Failed to load index for ${doc.name}:`, e);
+                }
+
+                if (questions.length > 0) {
+                    allQuestions[doc.id] = {
+                        questions: questions,
+                        docName: doc.name
+                    };
+                    totalQuestions += questions.length;
+                    console.log(`✓ Loaded ${questions.length} questions for ${doc.name}`);
                 }
             }
+
+            console.log(`Preload complete. Total questions loaded: ${totalQuestions}`);
+            console.log('Documents with questions:', Object.keys(allQuestions));
+        }
+
+        // 从索引文件解析题目
+        async function parseQuestionsFromIndexMarkdown(indexMarkdown, questionsDir) {
+            const questions = [];
+            const lines = indexMarkdown.split('\n');
+            const questionsDirPath = questionsDir.substring(0, questionsDir.lastIndexOf('/'));
+
+            console.log(`Parsing index for ${questionsDir}, base path: ${questionsDirPath}`);
+
+            // 解析索引文件中的题目链接
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                // 匹配 Markdown 链接格式，支持多种格式：
+                // [1. 题目](./questions/1-1__xxx.md)
+                // [1. 题目](./questions/01__1__xxx.md)
+                // [1. 题目](../questions/01__1__xxx.md)
+                const match = line.match(/^\d+\.\s+\[([^\]]+)\]\((\.?\/[^)]+)\)$/);
+
+                if (match) {
+                    const title = match[1];
+                    let questionPath = match[2];
+
+                    console.log(`Found link: title="${title}", path="${questionPath}"`);
+
+                    // 移除开头的 ./ 或 ../
+                    questionPath = questionPath.replace(/^(\.\.\/|\.\/)/, '');
+
+                    // 构建完整的子问题文件路径
+                    const fullQuestionPath = questionsDirPath + '/' + questionPath;
+
+                    console.log(`Full path: ${fullQuestionPath}`);
+
+                    try {
+                        // 加载子问题文件的内容
+                        const response = await fetch(fullQuestionPath);
+                        if (response.ok) {
+                            const questionMarkdown = await response.text();
+                            // 移除标题行（因为标题已经在索引中）
+                            // 支持 # 一级标题和 ## 二级标题
+                            const contentWithoutTitle = questionMarkdown.replace(/^#{1,2}\s+.+\n\n/, '');
+                            questions.push({
+                                index: i,
+                                title: title,
+                                content: contentWithoutTitle,
+                                filePath: fullQuestionPath
+                            });
+                            console.log(`✓ Loaded: ${title}`);
+                        } else {
+                            console.warn(`✗ Failed to load question file (status ${response.status}): ${fullQuestionPath}`);
+                        }
+                    } catch (error) {
+                        console.error(`✗ Error loading question file: ${fullQuestionPath}`, error);
+                    }
+                }
+            }
+
+            console.log(`Parsed ${questions.length} questions from ${questionsDir}`);
+            return questions;
+        }
+
+        // 根据文档ID获取文档名称
+        function getDocName(docId) {
+            const docNames = {
+                'javascript': 'JavaScript',
+                'react': 'React',
+                'vue2': 'Vue2',
+                'vue3': 'Vue3',
+                'es6': 'ES6',
+                'css': 'CSS',
+                'html': 'HTML',
+                'typescript': 'TypeScript',
+                'http': 'HTTP',
+                'git': 'Git',
+                'node': 'Node.js',
+                'design-patterns': '设计模式',
+                'miniprogram': '小程序',
+                'algorithm': '算法',
+                'programming': '编程题',
+                'lowcode': '低代码',
+                'ali': '阿里巴巴',
+                'baidu': '百度',
+                'jd': '京东',
+                'pdd': '拼多多',
+                'tencent': '腾讯',
+                'zhihu': '知乎',
+                'bytedance': '字节跳动',
+                'futu': '富途',
+                'gaotu': '高途',
+                'dianxiaomi': '店小秘',
+                'xiaomi': '小米',
+                'engineering': '工程化',
+                'performance': '性能优化',
+                'qiankun': '微前端',
+                'vite': 'Vite',
+                'webpack': 'Webpack'
+            };
+            return docNames[docId] || docId;
         }
 
         // 从 Markdown 中解析题目
@@ -2453,57 +2721,31 @@ id: 'typescript',
                 return;
             }
 
+            console.log(`Searching for: "${query}"`);
+            console.log('Available documents in allQuestions:', Object.keys(allQuestions));
+
             searchResults = [];
 
-            // 搜索所有文档的题目
-            documents.forEach(section => {
-                section.items.forEach(doc => {
-                    // 搜索主文档
-                    if (allQuestions[doc.id] && allQuestions[doc.id].questions.length > 0) {
-                        allQuestions[doc.id].questions.forEach((question, index) => {
-                            // 搜索题目标题和内容
-                            const titleMatch = question.title.toLowerCase()
-                                .includes(query);
-                            const contentMatch = question.content && question
-                                .content.toLowerCase().includes(query);
+            // 直接搜索 allQuestions 中的所有问题
+            Object.keys(allQuestions).forEach(docId => {
+                const docData = allQuestions[docId];
+                console.log(`Searching in doc: ${docId} (${docData.docName}) with ${docData.questions.length} questions`);
 
-                            if (titleMatch || contentMatch) {
-                                searchResults.push({
-                                    docId: doc.id,
-                                    docName: doc.name,
-                                    questionIndex: index,
-                                    questionTitle: question.title,
-                                    matchType: titleMatch ? 'title' :
-                                        'content'
-                                });
-                            }
+                docData.questions.forEach((question, index) => {
+                    // 搜索题目标题和内容
+                    const titleMatch = question.title.toLowerCase().includes(query);
+                    const contentMatch = question.content && question.content.toLowerCase().includes(query);
+
+                    if (titleMatch || contentMatch) {
+                        searchResults.push({
+                            docId: docId,
+                            docName: docData.docName,
+                            questionIndex: index,
+                            questionTitle: question.title,
+                            filePath: question.filePath,
+                            matchType: titleMatch ? 'title' : 'content'
                         });
-                    }
-
-                    // 搜索子分类文档
-                    if (doc.subItems && doc.subItems.length > 0) {
-                        doc.subItems.forEach(subDoc => {
-                            if (allQuestions[subDoc.id] && allQuestions[subDoc.id].questions.length > 0) {
-                                allQuestions[subDoc.id].questions.forEach((question, index) => {
-                                    // 搜索题目标题和内容
-                                    const titleMatch = question.title.toLowerCase()
-                                        .includes(query);
-                                    const contentMatch = question.content && question
-                                        .content.toLowerCase().includes(query);
-
-                                    if (titleMatch || contentMatch) {
-                                        searchResults.push({
-                                            docId: subDoc.id,
-                                            docName: subDoc.name,
-                                            questionIndex: index,
-                                            questionTitle: question.title,
-                                            matchType: titleMatch ? 'title' :
-                                                'content'
-                                        });
-                                    }
-                                });
-                            }
-                        });
+                        console.log(`Found match in ${docData.docName}: ${question.title}`);
                     }
                 });
             });
@@ -2582,19 +2824,68 @@ id: 'typescript',
             hideSearchResults();
             document.getElementById('searchInput').value = '';
 
-            // 获取问题标题
-            const questionTitle = allQuestions[docId]?.questions[questionIndex]?.title;
-            if (!questionTitle) {
+            // 获取问题信息
+            const question = allQuestions[docId]?.questions[questionIndex];
+            if (!question) {
                 console.error('Question not found:', docId, questionIndex);
                 return;
             }
 
-            // 如果当前文档不是目标文档，先加载目标文档
-            if (!currentDoc || currentDoc.id !== docId) {
-                loadDocument(docId, null, questionTitle);
+            console.log('Jumping to question:', question);
+
+            // 如果有文件路径，直接加载文件
+            if (question.filePath) {
+                loadQuestionFileDirectly(question.filePath, question.title, docId);
             } else {
-                // 使用问题标题而不是索引来查找
-                scrollToQuestionByTitle(questionTitle);
+                // 否则使用原来的逻辑
+                if (!currentDoc || currentDoc.id !== docId) {
+                    loadDocument(docId, null, question.title);
+                } else {
+                    scrollToQuestionByTitle(question.title);
+                }
+            }
+        }
+
+        // 直接加载问题文件
+        async function loadQuestionFileDirectly(filePath, questionTitle, docId) {
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>加载中...</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(filePath);
+                if (!response.ok) {
+                    throw new Error('文件不存在');
+                }
+
+                const markdown = await response.text();
+                const html = marked.parse(markdown);
+
+                content.innerHTML = `<div class="markdown-body">${html}</div>`;
+
+                // 添加代码块复制按钮
+                addCopyButtons();
+
+                // 高亮代码
+                if (typeof hljs !== 'undefined') {
+                    content.querySelectorAll('pre code').forEach((block) => {
+                        hljs.highlightElement(block);
+                    });
+                }
+
+                console.log(`Loaded question file: ${filePath}`);
+            } catch (error) {
+                content.innerHTML = `
+                    <div class="error">
+                        <h3>加载失败</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+                console.error('Failed to load question file:', error);
             }
         }
 
@@ -2733,10 +3024,18 @@ id: 'typescript',
 
         // 初始化
         window.addEventListener('load', async function () {
+            console.log('Page loaded, starting initialization...');
             renderSidebar();
 
             // 预加载所有文档的题目列表
-            await preloadAllQuestions();
+            try {
+                console.log('Calling preloadAllQuestions...');
+                await preloadAllQuestions();
+                console.log('preloadAllQuestions completed successfully');
+            } catch (error) {
+                console.error('Error during preloadAllQuestions:', error);
+                alert('加载题目列表失败: ' + error.message);
+            }
 
             // 检查 URL 参数
             const url = new URL(window.location);
