@@ -1198,7 +1198,7 @@
                         name: 'React 源码',
                         icon: '⚛️',
                         path: 'frontend-source-code/react/01__React虚拟DOM原理.md',
-                        badge: '4题',
+                        badge: '5题',
                         subItems: [{
                                 id: 'react-vdom',
                                 name: '虚拟 DOM',
@@ -1225,6 +1225,13 @@
                                 name: '响应式系统完整流程',
                                 icon: '⚛️',
                                 path: 'frontend-source-code/react/04__React响应式系统完整流程.md',
+                                badge: '源码'
+                            },
+                            {
+                                id: 'react-redux',
+                                name: 'Redux 原理与中间件',
+                                icon: '⚛️',
+                                path: 'frontend-source-code/react/05__Redux原理与中间件机制.md',
                                 badge: '源码'
                             }
                         ]
@@ -1415,6 +1422,281 @@ id: 'typescript',
                         icon: '📱',
                         path: 'big-company/index-xiaomi.md',
                         badge: '20题'
+                    },
+                    {
+                        id: 'tencentwx',
+                        name: '腾讯WX',
+                        icon: '💬',
+                        path: 'big-company/questions-tencentwx/01__1__Vue_父子组件如何通信.md',
+                        badge: '23题',
+                        subItems: [{
+                                id: 'tencentwx-1',
+                                name: '1. Vue 父子组件通信',
+                                icon: '💬',
+                                path: 'big-company/questions-tencentwx/01__1__Vue_父子组件如何通信.md',
+                                badge: '基础'
+                            },
+                            {
+                                id: 'tencentwx-2',
+                                name: '2. webpack 优化',
+                                icon: '💬',
+                                path: 'big-company/questions-tencentwx/02__2__webpack_做过哪些优化.md',
+                                badge: '基础'
+                            },
+                            {
+                                id: 'tencentwx-3',
+                                name: '3. tree-shaking 原理',
+                                icon: '💬',
+                                path: 'big-company/questions-tencentwx/03__3__tree-shaking_原理.md',
+                                badge: '基础'
+                            },
+                            {
+                                id: 'tencentwx-4',
+                                name: '4. node和浏览器事件循环',
+                                icon: '💬',
+                                path: 'big-company/questions-tencentwx/04__4__node_和浏览器事件循环的不同之处.md',
+                                badge: '基础'
+                            },
+                            {
+                                id: 'tencentwx-5',
+                                name: '5. 虚拟 DOM',
+                                icon: '💬',
+                                path: 'big-company/questions-tencentwx/05__5__vue_为什么要用虚拟_dom__优缺点是_.md',
+                                badge: '基础'
+                            },
+                            {
+                                id: 'tencentwx-6',
+                                name: '6. DOM Diff',
+                                icon: '💬',
+                                path: 'big-company/questions-tencentwx/06__6__domdiff_如何比较_.md',
+                                badge: '基础'
+                            },
+                            {
+                                id: 'tencentwx-7',
+                                name: '7. 防抖节流',
+                                icon: '💬',
+                                path: 'big-company/questions-tencentwx/07__7__防抖跟节流的原理和应用场景.md',
+                                badge: '基础'
+                            },
+                            {
+                                id: 'tencentwx-8',
+                                name: '8. 闭包',
+                                icon: '💬',
+                                path: 'big-company/questions-tencentwx/08__8__你对闭包的理解，闭包的应用场景.md',
+                                badge: '基础'
+                            },
+                            {
+                                id: 'tencentwx-9',
+                                name: '9. WebAssembly',
+                                icon: '💬',
+                                path: 'big-company/questions-tencentwx/09__9__有了解过_WebAssembly_吗_.md',
+                                badge: '基础'
+                            },
+                            {
+                                id: 'tencentwx-10',
+                                name: '10. 浏览器事件循环',
+                                icon: '💬',
+                                path: 'big-company/questions-tencentwx/10__10__浏览器事件循环.md',
+                                badge: '基础'
+                            },
+                            {
+                                id: 'tencentwx-11',
+                                name: '11. hybrid 开发',
+                                icon: '💬',
+                                path: 'big-company/questions-tencentwx/11__11__hybrid_开发_js_与原生交互的原理.md',
+                                badge: '场景'
+                            },
+                            {
+                                id: 'tencentwx-12',
+                                name: '12. 扫码登录',
+                                icon: '💬',
+                                path: 'big-company/questions-tencentwx/12__12__假设现在有一个_web_版的微信，扫码登录的原理是什么，除了轮询还有其他方式吗_.md',
+                                badge: '场景'
+                            },
+                            {
+                                id: 'tencentwx-13',
+                                name: '13. 好友列表优化',
+                                icon: '💬',
+                                path: 'big-company/questions-tencentwx/13__13__微信好友上限是_10000，如何保证好友列表渲染的性能_对于大量头像的加载有什么优化手段_.md',
+                                badge: '场景'
+                            },
+                            {
+                                id: 'tencentwx-14',
+                                name: '14. 好友搜索',
+                                icon: '💬',
+                                path: 'big-company/questions-tencentwx/14__14__如何在不不用对所有好友都进行一次遍历的情况下找到匹配的人名_.md',
+                                badge: '场景'
+                            },
+                            {
+                                id: 'tencentwx-15',
+                                name: '15. 文件上传',
+                                icon: '💬',
+                                path: 'big-company/questions-tencentwx/15__15__大文件如何实现断点续传_如何实现秒传_如何判断文件内容是否相同_.md',
+                                badge: '场景'
+                            },
+                            {
+                                id: 'tencentwx-16',
+                                name: '16. 二叉树路径和',
+                                icon: '💬',
+                                path: 'big-company/questions-tencentwx/16__16__二叉树路径和.md',
+                                badge: '算法'
+                            },
+                            {
+                                id: 'tencentwx-17',
+                                name: '17. 三数之和',
+                                icon: '💬',
+                                path: 'big-company/questions-tencentwx/17__17__三数之和.md',
+                                badge: '算法'
+                            },
+                            {
+                                id: 'tencentwx-18',
+                                name: '18. 找出重复数字',
+                                icon: '💬',
+                                path: 'big-company/questions-tencentwx/18__18__找出重复数字.md',
+                                badge: '算法'
+                            },
+                            {
+                                id: 'tencentwx-19',
+                                name: '19. 最长递增序列',
+                                icon: '💬',
+                                path: 'big-company/questions-tencentwx/19__19__最长递增序列.md',
+                                badge: '算法'
+                            },
+                            {
+                                id: 'tencentwx-20',
+                                name: '20. 反转数组',
+                                icon: '💬',
+                                path: 'big-company/questions-tencentwx/20__20__反转数组.md',
+                                badge: '算法'
+                            },
+                            {
+                                id: 'tencentwx-21',
+                                name: '21. 括号闭合',
+                                icon: '💬',
+                                path: 'big-company/questions-tencentwx/21__21__括号闭合.md',
+                                badge: '算法'
+                            },
+                            {
+                                id: 'tencentwx-22',
+                                name: '22. 洗牌算法',
+                                icon: '💬',
+                                path: 'big-company/questions-tencentwx/22__22__洗牌算法.md',
+                                badge: '算法'
+                            },
+                            {
+                                id: 'tencentwx-23',
+                                name: '23. 贝叶斯定理',
+                                icon: '💬',
+                                path: 'big-company/questions-tencentwx/23__23__贝叶斯定理.md',
+                                badge: '算法'
+                            }
+                        ]
+                    },
+                    {
+                        id: 'kuaishou',
+                        name: '快手',
+                        icon: '🎬',
+                        path: 'big-company/questions-kuaishou/01__1__富文本编辑器的复制粘贴功能是如何实现的__有更好的实现方式吗_.md',
+                        badge: '14题',
+                        subItems: [{
+                                id: 'kuaishou-1',
+                                name: '富文本编辑器复制粘贴',
+                                icon: '🎬',
+                                path: 'big-company/questions-kuaishou/01__1__富文本编辑器的复制粘贴功能是如何实现的__有更好的实现方式吗_.md',
+                                badge: '技术'
+                            },
+                            {
+                                id: 'kuaishou-2',
+                                name: '小程序性能优化',
+                                icon: '🎬',
+                                path: 'big-company/questions-kuaishou/02__2__小程序性能优化做了哪些事情_.md',
+                                badge: '技术'
+                            },
+                            {
+                                id: 'kuaishou-3',
+                                name: 'ESLint 插件开发',
+                                icon: '🎬',
+                                path: 'big-company/questions-kuaishou/03__3__如何开发一个_eslint_的插件_.md',
+                                badge: '技术'
+                            },
+                            {
+                                id: 'kuaishou-4',
+                                name: 'Babel 转换流程',
+                                icon: '🎬',
+                                path: 'big-company/questions-kuaishou/04__4__babel_的转换流程是什么样的_babel_包含哪几个部分，核心包有哪些_.md',
+                                badge: '技术'
+                            },
+                            {
+                                id: 'kuaishou-5',
+                                name: '实时搜索框组件',
+                                icon: '🎬',
+                                path: 'big-company/questions-kuaishou/05__5___代码题__实现一个实时搜索框组件.md',
+                                badge: '代码'
+                            },
+                            {
+                                id: 'kuaishou-6',
+                                name: '二分查找最后位置',
+                                icon: '🎬',
+                                path: 'big-company/questions-kuaishou/06__6___代码题__查找有序数组中数字最后一次出现的位置.md',
+                                badge: '代码'
+                            },
+                            {
+                                id: 'kuaishou-7',
+                                name: '大数相加',
+                                icon: '🎬',
+                                path: 'big-company/questions-kuaishou/07__7___代码题__大数相加.md',
+                                badge: '代码'
+                            },
+                            {
+                                id: 'kuaishou-8',
+                                name: '同步 sleep 方法',
+                                icon: '🎬',
+                                path: 'big-company/questions-kuaishou/08__8___代码题__实现一个同步的_sleep_方法.md',
+                                badge: '代码'
+                            },
+                            {
+                                id: 'kuaishou-9',
+                                name: 'Z 字型打印矩阵',
+                                icon: '🎬',
+                                path: 'big-company/questions-kuaishou/09__9___代码题__按照_Z_字型打印矩阵.md',
+                                badge: '代码'
+                            },
+                            {
+                                id: 'kuaishou-10',
+                                name: '架构工作',
+                                icon: '🎬',
+                                path: 'big-company/questions-kuaishou/10__10__在这家公司时在架构上做了什么事情_.md',
+                                badge: '行为'
+                            },
+                            {
+                                id: 'kuaishou-11',
+                                name: '团队提效',
+                                icon: '🎬',
+                                path: 'big-company/questions-kuaishou/11__11__在团队提效上做了哪些事情_.md',
+                                badge: '行为'
+                            },
+                            {
+                                id: 'kuaishou-12',
+                                name: '绩效评定',
+                                icon: '🎬',
+                                path: 'big-company/questions-kuaishou/12__12__如何评定团队成员的绩效_.md',
+                                badge: '行为'
+                            },
+                            {
+                                id: 'kuaishou-13',
+                                name: '项目质量',
+                                icon: '🎬',
+                                path: 'big-company/questions-kuaishou/13__13__如何保证项目质量_.md',
+                                badge: '行为'
+                            },
+                            {
+                                id: 'kuaishou-14',
+                                name: '技术推动业务',
+                                icon: '🎬',
+                                path: 'big-company/questions-kuaishou/14__14__做过哪些技术推动业务的事情_.md',
+                                badge: '行为'
+                            }
+                        ]
                     }
                 ]
             },
@@ -1669,12 +1951,13 @@ id: 'typescript',
                             </div>
                             ${hasSubItems ? `
                                 <div class="question-list ${subItemsClass}" id="subitems-${doc.id}">
-                                    ${doc.subItems.map(subItem => {
+                                    ${doc.subItems.map((subItem, index) => {
                                         const subActiveClass = currentDoc && currentDoc.id === subItem.id ? 'active' : '';
+                                        const num = index + 1;
                                         return `
                                             <div class="question-item ${subActiveClass}" onclick="loadDocument('${subItem.id}')">
                                                 <span style="margin-right: 4px;">${subItem.icon}</span>
-                                                ${subItem.name}
+                                                ${num}. ${subItem.name}
                                                 <span style="margin-left: auto; font-size: 10px; opacity: 0.7;">${subItem.badge}</span>
                                             </div>
                                         `;
