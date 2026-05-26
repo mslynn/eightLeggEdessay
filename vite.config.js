@@ -94,6 +94,30 @@ export default defineConfig({
         {
           src: 'algorithm',
           dest: ''
+        },
+        {
+          src: 'big-company',
+          dest: ''
+        },
+        {
+          src: 'programming',
+          dest: ''
+        },
+        {
+          src: 'lowcode',
+          dest: ''
+        },
+        {
+          src: 'frontend-source-code',
+          dest: ''
+        },
+        {
+          src: 'data',
+          dest: ''
+        },
+        {
+          src: 'static',
+          dest: ''
         }
       ]
     })
