@@ -3170,7 +3170,7 @@ id: 'typescript',
                             const titleText = match[2].trim();
                             const relPath = match[3].replace(/^.\//, ''); // 去掉开头的 ./
                             // 从 doc.path 中提取目录（例如：vue3/Vue3高频面试题补充.md -> vue3）
-                            const docDir = doc.path.split('/').slice(0, -1).join('/');
+                            const docDir = cfg.indexPath.split('/').slice(0, -1).join('/');
                             currentQuestions.push({
                                 index: num - 1,
                                 title: `${num}. ${titleText}`,
@@ -3552,8 +3552,35 @@ id: 'typescript',
         let searchResults = [];
         let selectedSearchIndex = -1;
 
-        document.getElementById('searchInput').addEventListener('input', async function (e) {
+        function looksLikeHtmlDocument(text) {
+            return /^\s*<!doctype html/i.test(text) || /^\s*<html/i.test(text);
+        }
+
+        function resolvePreloadIndexPath(doc) {
+            const splitCfg = splitDocConfigs[doc.id];
+            if (splitCfg?.type === 'index' && splitCfg.indexPath) {
+                return splitCfg.indexPath;
+            }
+
+            const lastSlashIndex = doc.dir.lastIndexOf('/');
+            const baseDir = lastSlashIndex === -1 ? '' : doc.dir.slice(0, lastSlashIndex);
+            const leafDir = lastSlashIndex === -1 ? doc.dir : doc.dir.slice(lastSlashIndex + 1);
+
+            if (leafDir === 'questions') {
+                return `${baseDir}/index.md`;
+            }
+
+            if (leafDir.startsWith('questions-')) {
+                return `${baseDir}/index-${leafDir.slice('questions-'.length)}.md`;
+            }
+
+            return `${baseDir}/index.md`;
+        }
+
+        async function handleSearchInput(e) {
             const query = e.target.value.toLowerCase().trim();
+            const normalizedQuery = normalizeQuestionTitle(query).trim();
+            const compactQuery = normalizedQuery.replace(/[\s\-_/]+/g, '');
             selectedSearchIndex = -1;
 
             if (!query) {
@@ -3565,46 +3592,42 @@ id: 'typescript',
 
             searchResults = [];
 
-            // 直接搜索 allQuestions 中的所有问题
             Object.keys(allQuestions).forEach(docId => {
                 const docData = allQuestions[docId];
 
                 docData.questions.forEach((question, index) => {
-                    const titleLower = question.title.toLowerCase();
+                    const cleanTitle = normalizeQuestionTitle(question.title).trim();
+                    if (!cleanTitle || /^x{2,}$/i.test(cleanTitle)) {
+                        return;
+                    }
+
+                    const titleLower = cleanTitle.toLowerCase();
+                    const compactTitle = titleLower.replace(/[\s\-_/]+/g, '');
                     const contentLower = question.content ? question.content.toLowerCase() : '';
-                    
-                    // 计算匹配分数
+
                     let score = 0;
                     let matchType = null;
 
-                    // 1. 标题精确匹配（最高优先级）
-                    if (titleLower === query) {
-                        score = 100;
+                    if (titleLower === normalizedQuery || compactTitle === compactQuery) {
+                        score = 220;
                         matchType = 'exact-title';
-                    }
-                    // 2. 标题以搜索词开头
-                    else if (titleLower.startsWith(query)) {
-                        score = 80;
+                    } else if (titleLower.startsWith(normalizedQuery) || compactTitle.startsWith(compactQuery)) {
+                        score = 180;
                         matchType = 'title-start';
-                    }
-                    // 3. 标题包含搜索词
-                    else if (titleLower.includes(query)) {
-                        score = 60;
+                    } else if (titleLower.includes(normalizedQuery) || compactTitle.includes(compactQuery)) {
+                        score = 140;
                         matchType = 'title-contains';
-                    }
-                    // 4. 内容包含搜索词
-                    else if (contentLower.includes(query)) {
+                    } else if (contentLower.includes(normalizedQuery)) {
                         score = 40;
                         matchType = 'content';
                     }
 
-                    // 如果有匹配，加入结果
                     if (score > 0) {
                         searchResults.push({
                             docId: docId,
                             docName: docData.docName,
                             questionIndex: index,
-                            questionTitle: question.title,
+                            questionTitle: cleanTitle,
                             filePath: question.filePath,
                             matchType: matchType,
                             score: score
@@ -3613,13 +3636,22 @@ id: 'typescript',
                 });
             });
 
-            // 按分数排序（分数高的在前）
             searchResults.sort((a, b) => b.score - a.score);
+            const seen = new Set();
+            searchResults = searchResults.filter((result) => {
+                const key = result.filePath || `${result.docId}:${result.questionIndex}`;
+                if (seen.has(key)) {
+                    return false;
+                }
+                seen.add(key);
+                return true;
+            });
 
             console.log(`Found ${searchResults.length} results for "${query}"`);
-            // 显示搜索结果
             showSearchResults(searchResults, query);
-        });
+        }
+
+        document.getElementById('searchInput').addEventListener('input', handleSearchInput);
 
         // 预加载所有文档的题目列表
         async function preloadAllQuestions() {
@@ -3672,20 +3704,30 @@ id: 'typescript',
 
                 // 尝试加载索引文件来获取问题列表
                 try {
-                    const indexResponse = await fetch(doc.dir.replace('/questions-', '/index-').replace('/questions', '/index.md'));
+                    const indexPath = resolvePreloadIndexPath(doc);
+                    const indexResponse = await fetch(indexPath);
                     if (indexResponse.ok) {
                         const indexMarkdown = await indexResponse.text();
+                        if (looksLikeHtmlDocument(indexMarkdown)) {
+                            console.warn(`Skipped HTML fallback while preloading index: ${indexPath}`);
+                            continue;
+                        }
                         // 从索引文件中提取问题链接
                         const linkMatches = indexMarkdown.matchAll(/\d+\.\s+\[([^\]]+)\]\(([^)]+)\)/g);
+                        const indexDir = indexPath.split('/').slice(0, -1).join('/');
                         for (const match of linkMatches) {
                             const title = match[1];
                             const path = match[2].replace(/^\.\//, '');
-                            const fullPath = doc.dir + '/' + path;
+                            const fullPath = `${indexDir}/${path}`;
                             
                             try {
                                 const fileResponse = await fetch(fullPath);
                                 if (fileResponse.ok) {
                                     const markdown = await fileResponse.text();
+                                    if (looksLikeHtmlDocument(markdown)) {
+                                        console.warn(`Skipped HTML fallback while preloading question: ${fullPath}`);
+                                        continue;
+                                    }
                                     const content = markdown.replace(/^#{1,2}\s+.+\n\n/, '');
                                     questions.push({
                                         index: questions.length,
@@ -3873,50 +3915,7 @@ id: 'typescript',
             return questions;
         }
 
-        document.getElementById('searchInput').addEventListener('input', async function (e) {
-            const query = e.target.value.toLowerCase().trim();
-            selectedSearchIndex = -1;
-
-            if (!query) {
-                hideSearchResults();
-                return;
-            }
-
-            console.log(`Searching for: "${query}"`);
-            console.log('Available documents in allQuestions:', Object.keys(allQuestions));
-
-            searchResults = [];
-
-            // 直接搜索 allQuestions 中的所有问题
-            Object.keys(allQuestions).forEach(docId => {
-                const docData = allQuestions[docId];
-                console.log(`Searching in doc: ${docId} (${docData.docName}) with ${docData.questions.length} questions`);
-
-                docData.questions.forEach((question, index) => {
-                    // 搜索题目标题和内容
-                    const titleMatch = question.title.toLowerCase().includes(query);
-                    const contentMatch = question.content && question.content.toLowerCase().includes(query);
-
-                    if (titleMatch || contentMatch) {
-                        searchResults.push({
-                            docId: docId,
-                            docName: docData.docName,
-                            questionIndex: index,
-                            questionTitle: question.title,
-                            filePath: question.filePath,
-                            matchType: titleMatch ? 'title' : 'content'
-                        });
-                        console.log(`Found match in ${docData.docName}: ${question.title}`);
-                    }
-                });
-            });
-
-            console.log(`Found ${searchResults.length} results for "${query}"`);
-            // 显示搜索结果
-            showSearchResults(searchResults, query);
-        });
-
-        // 显示搜索结果
+        // ??????
         function showSearchResults(results, query) {
             // 移除旧的搜索结果容器
             const oldResults = document.querySelector('.search-results');
@@ -3940,7 +3939,8 @@ id: 'typescript',
             // 高亮匹配文本
             const highlightText = (text, query) => {
                 if (!query) return text;
-                const regex = new RegExp(`(${query})`, 'gi');
+                const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regex = new RegExp(`(${escapedQuery})`, 'gi');
                 return text.replace(regex, '<span class="result-match">$1</span>');
             };
 
