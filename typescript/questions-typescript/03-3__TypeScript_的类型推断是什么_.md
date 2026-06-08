@@ -21,3 +21,7 @@ let length: number = (value as string).length;
 // 或
 let length2: number = (<string>value).length;
 ```
+
+---
+
+## 泛型

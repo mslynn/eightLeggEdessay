@@ -107,7 +107,7 @@ python -m SimpleHTTPServer 8000
 ├── javascript/             # JavaScript 面试题
 │   └── JavaScript面试题集锦.md (20题)
 ├── typescript/             # TypeScript 面试题
-│   └── TypeScript面试题集锦.md (7题)
+│   └── TypeScript面试题集锦.md (12题)
 ├── css/                    # CSS 面试题
 │   └── CSS面试题集锦.md   (8题)
 ├── html/                   # HTML 面试题
@@ -158,7 +158,7 @@ python -m SimpleHTTPServer 8000
 - **JavaScript** (20题) - 原型链、闭包、事件循环、ES6+ 等
 - **CSS** (8题) - 盒模型、布局、动画、预处理器等
 - **HTML** (6题) - 语义化、SEO、表单、多媒体等
-- **TypeScript** (7题) - 类型系统、泛型、装饰器、高级类型等
+- **TypeScript** (12题) - 类型系统、泛型、工具类型、工程配置等
 - **ES6** (20题) - let/const、箭头函数、Promise、Module 等
 
 ### 网络与工程化

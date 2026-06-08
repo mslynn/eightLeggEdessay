@@ -66,3 +66,7 @@ interface User {
 let user: User = { name: 'Alice', age: 25 };
 let name = pluck(user, ['name']); // string[]
 ```
+
+---
+
+## 装饰器

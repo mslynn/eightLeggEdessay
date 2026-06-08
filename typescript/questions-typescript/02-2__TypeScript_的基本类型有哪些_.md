@@ -49,3 +49,7 @@ function error(message: string): never {
 let obj: object = { name: 'Alice' };
 let user: { name: string; age: number } = { name: 'Alice', age: 25 };
 ```
+
+---
+
+## 类型系统

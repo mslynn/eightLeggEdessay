@@ -7,17 +7,25 @@ const __dirname = path.dirname(__filename);
 
 // 读取主文件
 const mainFile = path.join(__dirname, 'TypeScript面试题集锦.md');
-const content = fs.readFileSync(mainFile, 'utf-8');
+const rawContent = fs.readFileSync(mainFile, 'utf-8');
+const content = rawContent.replace(/\r\n/g, '\n');
 
-// 查找所有问题（### 开头的）
-const questionPattern = /###\s+(\d+\.\s+.+?)\n/g;
+function toSafeTitle(title) {
+  return title
+    .replace(/[\/\\:*?"<>|？`]/g, '_')
+    .replace(/\s+/g, '_');
+}
+
+// 查找所有问题标题及其在文档中的位置
+const questionPattern = /###\s+(\d+)\.\s+(.+?)\r?\n/g;
 const questions = [];
 let match;
 
 while ((match = questionPattern.exec(content)) !== null) {
   questions.push({
-    number: match[1],
-    title: match[1].replace(/^\d+\.\s+/, '')
+    number: Number(match[1]),
+    title: match[2].trim(),
+    start: match.index
   });
 }
 
@@ -31,23 +39,27 @@ if (!fs.existsSync(questionsDir)) {
 
 // 拆分每个问题
 questions.forEach((question, index) => {
-  const questionNumber = index + 1;
-  const safeTitle = question.title.replace(/[\/\\:*?"<>|？]/g, '_').replace(/\s+/g, '_');
+  const questionNumber = question.number;
+  const safeTitle = toSafeTitle(question.title);
   const fileName = `${String(questionNumber).padStart(2, '0')}-${questionNumber}__${safeTitle}.md`;
   const filePath = path.join(questionsDir, fileName);
-  
-  // 提取问题内容：从当前问题的 ### 开始，到下一个 ###、--- 或文件结束
-  const pattern = new RegExp(`###\\s+${questionNumber}\\.\\s+.+?\\n\\n\\*\\*答案：\\*\\*([\\s\\S]*?)(?=\\n\\n###\\s+\\d+\\.|\\n\\n---|$)`);
-  const contentMatch = content.match(pattern);
-  
-  if (contentMatch) {
-    const questionContent = `# ${questionNumber}. ${question.title}\n\n**答案：**\n\n${contentMatch[1].trim()}`;
-    
-    fs.writeFileSync(filePath, questionContent, 'utf-8');
-    console.log(`创建文件: ${fileName}`);
-  } else {
-    console.log(`警告：无法提取问题 ${questionNumber} 的内容`);
+
+  const end = index < questions.length - 1 ? questions[index + 1].start : content.indexOf('\n## 总结');
+  const questionBlock = content.slice(question.start, end === -1 ? content.length : end).trim();
+  const answerPrefix = `### ${questionNumber}. ${question.title}\n\n**答案：**`;
+
+  if (!questionBlock.startsWith(answerPrefix)) {
+    console.log(`警告：问题 ${questionNumber} 的格式不符合预期`);
+    return;
   }
+
+  let answerContent = questionBlock.slice(answerPrefix.length).trim();
+  answerContent = answerContent.replace(/\n+---\s*$/, '').trim();
+
+  const questionContent = `# ${questionNumber}. ${question.title}\n\n**答案：**\n\n${answerContent}`;
+
+  fs.writeFileSync(filePath, questionContent, 'utf-8');
+  console.log(`创建文件: ${fileName}`);
 });
 
 // 创建索引文件
@@ -55,16 +67,16 @@ const indexContent = `# TypeScript 面试题集锦（截止 2025 年底）
 
 ## 目录
 
-${questions.map((q, i) => `${i + 1}. [${i + 1}. ${q.title}](./questions-typescript/${String(i + 1).padStart(2, '0')}-${i + 1}__${q.title.replace(/[\/\\:*?"<>|？]/g, '_').replace(/\s+/g, '_')}.md)`).join('\n')}
+${questions.map((q) => `${q.number}. [${q.number}. ${q.title}](./questions-typescript/${String(q.number).padStart(2, '0')}-${q.number}__${toSafeTitle(q.title)}.md)`).join('\n')}
 
 ---
 
 ## 问题列表
 
-${questions.map((q, i) => `
-### ${i + 1}. ${q.title}
+${questions.map((q) => `
+### ${q.number}. ${q.title}
 
-[查看详细答案](./questions-typescript/${String(i + 1).padStart(2, '0')}-${i + 1}__${q.title.replace(/[\/\\:*?"<>|？]/g, '_').replace(/\s+/g, '_')}.md)`).join('\n')}
+[查看详细答案](./questions-typescript/${String(q.number).padStart(2, '0')}-${q.number}__${toSafeTitle(q.title)}.md)`).join('\n')}
 `;
 
 fs.writeFileSync(path.join(__dirname, 'index.md'), indexContent, 'utf-8');
